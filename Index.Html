@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lokeshraj AI Tutor</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;padding:24px;background:#f6f7fb}
+    .card{max-width:760px;margin:0 auto;background:#fff;border-radius:16px;box-shadow:0 8px 20px rgba(0,0,0,.06);padding:20px}
+    .row{display:flex;gap:8px}
+    input,button,textarea{font-size:16px}
+    input,textarea{flex:1;padding:12px;border:1px solid #ddd;border-radius:10px}
+    button{padding:12px 16px;border:0;border-radius:10px;background:#5a5cff;color:#fff}
+    .answer{white-space:pre-wrap;background:#fafafa;border:1px solid #eee;border-radius:12px;padding:12px;margin-top:12px}
+    .chip{display:inline-block;padding:6px 10px;background:#eef;border-radius:999px;margin:6px 6px 0 0;font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Lokeshraj AI Tutor</h2>
+    <p>Ask a question. Voice greeting is on.</p>
+
+    <div class="row">
+      <input id="q" placeholder="Type your question…" />
+      <button id="askBtn">Ask</button>
+    </div>
+
+    <div style="margin-top:10px">
+      <label class="chip"><input type="checkbox" id="speak" checked> Speak answers</label>
+      <select id="voice" class="chip">
+        <option value="Female">Female</option>
+        <option value="Male">Male</option>
+      </select>
+      <span class="chip">Rate <input id="rate" type="range" min="0.7" max="1.4" step="0.1" value="1"/></span>
+    </div>
+
+    <div id="ans" class="answer"></div>
+  </div>
+
+  <script>
+    // 1) PUT YOUR GOOGLE APPS SCRIPT URL HERE:
+    const API_BASE = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE"; // ends with /exec
+
+    // Welcome voice (mobile may require a tap first)
+    window.addEventListener('load', () => {
+      try {
+        const u = new SpeechSynthesisUtterance("Welcome to Lokeshraj AI Tutor! How can I help you today?");
+        window.speechSynthesis.speak(u);
+      } catch(e) {}
+    });
+
+    const q = document.getElementById('q');
+    const ans = document.getElementById('ans');
+    const speak = document.getElementById('speak');
+    const voiceSel = document.getElementById('voice');
+    const rate = document.getElementById('rate');
+
+    function pickVoice(gender) {
+      const list = window.speechSynthesis.getVoices();
+      const v = list.find(v => new RegExp(gender,'i').test(v.name)) || list[0];
+      return v || null;
+    }
+    function say(text) {
+      if (!speak.checked || !text) return;
+      const u = new SpeechSynthesisUtterance(text);
+      const v = pickVoice(voiceSel.value);
+      if (v) u.voice = v;
+      u.rate = Number(rate.value || 1);
+      window.speechSynthesis.speak(u);
+    }
+
+    document.getElementById('askBtn').onclick = async () => {
+      const question = q.value.trim();
+      if (!question) return;
+      ans.textContent = "Thinking…";
+
+      try {
+        const r = await fetch(API_BASE, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question })
+        });
+        const data = await r.json();
+        ans.textContent = data.answer || data.error || "No response.";
+        say(ans.textContent);
+      } catch (e) {
+        ans.textContent = "Error: " + e;
+      }
+    };
+  </script>
+</body>
+</html>
