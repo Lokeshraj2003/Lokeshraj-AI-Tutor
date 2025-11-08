@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lokeshraj AI Tutor</title>
+<style>
+body{font-family:Arial;padding:20px;background:#f6f7fb}
+.box{max-width:750px;margin:auto;background:#fff;padding:20px;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+input,button{font-size:16px;padding:12px;border-radius:8px;border:1px solid #ccc;width:100%}
+button{background:#5a5cff;color:#fff;border:0;margin-top:10px}
+.answer{margin-top:18px;padding:14px;background:#f9f9f9;border-radius:10px;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<div class="box">
+<h2>Lokeshraj AI Tutor</h2>
+<p>Ask anything:</p>
+<input id="q" placeholder="Type your question..." />
+<button onclick="ask()">Ask</button>
+<div id="ans" class="answer"></div>
+</div>
+
+<script>
+const API_BASE = "https://script.google.com/macros/s/AKfycbypraqu2wxwUwkULIMnB-m2OikmOz6rRxeNvOdIeRsZhGUTJm_20_XxyHTv2tifU_NK/exec"; // <--- Replace this!!
+
+async function ask(){
+  const q = document.getElementById("q").value.trim();
+  if(!q) return;
+  document.getElementById("ans").innerText = "Thinking...";
+  const r = await fetch(API_BASE, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ question: q })
+  });
+  const data = await r.json();
+  document.getElementById("ans").innerText = data.answer || data.error || "No response";
+}
+</script>
+</body>
+</html>
